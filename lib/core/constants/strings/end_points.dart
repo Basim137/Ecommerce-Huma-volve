@@ -23,6 +23,9 @@ class ApiKeys {
   static String email = "email";
   static String password = "password";
   static String role = "role";
+
+  static String limit = "limit";
+  static String offest = "offest";
   static String accessToken = "access_token";
   static String refreshToken = "refresh_token";
   static String avatar = "avatar";

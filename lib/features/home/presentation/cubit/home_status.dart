@@ -1,3 +1,4 @@
+import 'package:ecommerce_app_huma_volve/core/errors/error_model.dart';
 import 'package:ecommerce_app_huma_volve/features/home/domin/entity/categories_entity.dart';
 import 'package:ecommerce_app_huma_volve/features/home/domin/entity/product_entity.dart';
 
@@ -31,3 +32,18 @@ class FailureProducts extends HomeStatus {
 }
 
 class LoadingProducts extends HomeStatus {}
+
+////////////////////////
+///
+class MoreProductsFailure extends HomeStatus {
+  ErrorModel error;
+
+  MoreProductsFailure(this.error);
+}
+
+class MoreProductsLoading extends HomeStatus {}
+
+class MoreProductsSuccess extends HomeStatus {
+  List<ProductEntity> products;
+  MoreProductsSuccess({required this.products});
+}

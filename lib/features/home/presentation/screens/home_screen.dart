@@ -1,4 +1,3 @@
-import 'package:ecommerce_app_huma_volve/features/home/domin/entity/categories_entity.dart';
 import 'package:ecommerce_app_huma_volve/features/home/presentation/cubit/home_cubit.dart';
 import 'package:ecommerce_app_huma_volve/features/home/presentation/cubit/home_status.dart';
 import 'package:flutter/material.dart';
@@ -18,15 +17,24 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedCategoryIndex = 0;
-  List<CategoryEntity> categories = [];
+  ScrollController scrollController = ScrollController();
 
   @override
   void initState() {
+    scrollController.addListener(scrollListener);
+
     // TODO: implement initState
 
     BlocProvider.of<HomeCubit>(context).getCategories();
-    BlocProvider.of<HomeCubit>(context).categoryProductsWithId(0);
-    super.initState();
+  }
+
+  void scrollListener() {
+    double currentPosition = scrollController.position.pixels;
+    double end = scrollController.position.maxScrollExtent;
+
+    if (end - 222 <= currentPosition) {
+      BlocProvider.of<HomeCubit>(context).getMoreProducts();
+    }
   }
 
   @override
@@ -35,6 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppTheme.background,
       body: SafeArea(
         child: CustomScrollView(
+          controller: scrollController,
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
@@ -127,27 +136,39 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 32),
                     BlocBuilder<HomeCubit, HomeStatus>(
+                      buildWhen: (previous, current) {
+                        if (current is SuccessCategoryProducts ||
+                            current is FailureCategoryProducts ||
+                            current is LoadingCategoryProducts) {
+                          return true;
+                        }
+                        return false;
+                      },
                       builder: (context, state) {
                         if (state is FailureCategoryProducts) {
                           return Center(child: Text(state.errorMessage));
                         } else if (state is SuccessCategoryProducts) {
-                          if (categories.isEmpty) {
-                            categories = state.categories;
-                          }
-
                           return SizedBox(
                             height: 44,
                             child: ListView.separated(
                               scrollDirection: Axis.horizontal,
-                              itemCount: categories.length,
+                              itemCount: BlocProvider.of<HomeCubit>(
+                                context,
+                              ).categoriesList.length,
                               separatorBuilder: (context, index) =>
                                   const SizedBox(width: 12),
                               itemBuilder: (context, index) {
                                 return CategoryChip(
                                   label:
-                                      categories[index].categoryName ?? 'Empty',
+                                      BlocProvider.of<HomeCubit>(
+                                        context,
+                                      ).categoriesList[index].categoryName ??
+                                      'Empty',
                                   isSelected: _selectedCategoryIndex == index,
                                   onTap: () {
+                                    if (_selectedCategoryIndex == index) {
+                                      return;
+                                    }
                                     setState(() {
                                       _selectedCategoryIndex = index;
                                       BlocProvider.of<HomeCubit>(
@@ -173,10 +194,20 @@ class _HomeScreenState extends State<HomeScreen> {
             ///
             ///
             BlocBuilder<HomeCubit, HomeStatus>(
+              buildWhen: (previous, current) {
+                if (current is FailureProducts ||
+                    current is SuccessProducts ||
+                    current is LoadingProducts) {
+                  return true;
+                }
+
+                return false;
+              },
+
               builder: (context, state) {
-                if (state is FailureProducts) {
+                if (state is LoadingProducts) {
                   return SliverToBoxAdapter(
-                    child: Center(child: Text(state.errorMessage)),
+                    child: Center(child: CircularProgressIndicator()),
                   );
                 } else if (state is SuccessProducts) {
                   return SliverPadding(
@@ -191,28 +222,30 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                       delegate: SliverChildBuilderDelegate((context, index) {
                         return ProductCard(
-                          product: Product(
-                            id: '1',
-                            name: state.products[index].title ?? '',
-                            description:
-                                'Comfortable and stylish white sneakers for everyday use.',
-                            price: 59.99,
-                            imageUrl: state.products[index].img ?? '',
-                            colors: [Colors.white, Colors.black, Colors.grey],
-                            sizes: ['40', '41', '42', '43'],
+                          product: Product.fromProductEntity(
+                            state.products[index],
                           ),
                         );
                       }, childCount: state.products.length),
                     ),
                   );
                 } else {
-                  return SliverToBoxAdapter(
-                    child: Center(child: CircularProgressIndicator()),
-                  );
+                  return SliverToBoxAdapter(child: Center(child: SizedBox()));
                 }
               },
             ),
 
+            BlocBuilder<HomeCubit, HomeStatus>(
+              builder: (context, state) {
+                if (state is MoreProductsLoading) {
+                  return SliverToBoxAdapter(
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                } else {
+                  return SliverToBoxAdapter(child: Center(child: SizedBox()));
+                }
+              },
+            ),
             const SliverToBoxAdapter(child: SizedBox(height: 24)),
           ],
         ),

@@ -11,6 +11,14 @@ import 'package:ecommerce_app_huma_volve/features/home/presentation/cubit/home_s
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomeCubit extends Cubit<HomeStatus> {
+  int limit = 10;
+  int offset = 0;
+  int selectedCat = 0;
+  bool loadingMore = false;
+  bool hasMore = true;
+  List<CategoryEntity> categoriesList = [];
+
+  List<ProductEntity> products = [];
   HomeRepoImplementation remoteDataSrs = HomeRepoImplementation(
     HomeRemoteDataSrc(DioWay(Dio())),
   );
@@ -33,23 +41,70 @@ class HomeCubit extends Cubit<HomeStatus> {
         emit(FailureCategoryProducts(errorMessage: left.errorMessage));
       },
       (right) {
+        categoriesList = right;
         emit(SuccessCategoryProducts(categories: right));
+
+        if (categoriesList.isEmpty) return;
+        categoryProductsWithId(right.first.categoryId ?? 1);
       },
     );
   }
 
   void categoryProductsWithId(int id) async {
+    hasMore = true;
+
+    products.clear();
     emit(LoadingProducts());
 
     Either<ErrorModel, List<ProductEntity>> categories =
-        await getProductsUseCase.invoke(categoryId: id);
+        await getProductsUseCase.invoke(
+          categoryId: id,
+          limit: limit,
+          offest: offset,
+        );
 
     categories.fold(
       (left) {
         emit(FailureProducts(errorMessage: left.errorMessage));
       },
       (right) {
+        products.addAll(right);
+        offset = right.length;
+        if (right.length < limit) {
+          hasMore = false;
+        }
+        selectedCat = id;
         emit(SuccessProducts(products: right));
+      },
+    );
+  }
+
+  void getMoreProducts() async {
+    if (loadingMore || !hasMore) {
+      return;
+    }
+
+    loadingMore = true;
+
+    emit(MoreProductsLoading());
+
+    final newProducts = await getProductsUseCase.invoke(
+      categoryId: selectedCat,
+      limit: limit,
+      offest: offset,
+    );
+
+    newProducts.fold(
+      (error) {
+        emit(MoreProductsFailure(error));
+      },
+      (data) {
+        products.addAll(data);
+        offset += data.length;
+        if (data.length < limit) {
+          hasMore = false;
+        }
+        emit(MoreProductsSuccess(products: data));
       },
     );
   }

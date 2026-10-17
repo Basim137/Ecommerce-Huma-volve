@@ -3,22 +3,17 @@ import 'package:ecommerce_app_huma_volve/features/home/data/model/categories_mod
 import 'package:ecommerce_app_huma_volve/features/home/domin/entity/product_entity.dart';
 
 class ProductModel extends ProductEntity {
-  final int? id;
-
-  final String? desc;
   final String? slug;
-
-  final int? price;
 
   final CategoryModel? categoryModel;
 
   ProductModel({
-    this.id,
+    super.id,
     super.img,
     super.title,
-    this.desc,
+    super.desc,
     this.slug,
-    this.price,
+    super.price,
     this.categoryModel,
   });
 

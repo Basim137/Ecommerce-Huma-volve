@@ -7,6 +7,8 @@ abstract class HomeRepositry {
   Future<Either<ErrorModel, List<CategoryEntity>>> getAllCategories();
 
   Future<Either<ErrorModel, List<ProductEntity>>> getCategoryProduct(
-    int categoryId,
-  );
+    int categoryId, {
+    required int limit,
+    required int offest,
+  });
 }

@@ -21,7 +21,13 @@ class GetProductsUseCase {
 
   Future<Either<ErrorModel, List<ProductEntity>>> invoke({
     required int categoryId,
+    required int limit,
+    required int offest,
   }) {
-    return homeRepoImplementation.getCategoryProduct(categoryId);
+    return homeRepoImplementation.getCategoryProduct(
+      categoryId,
+      limit: limit,
+      offest: offest,
+    );
   }
 }

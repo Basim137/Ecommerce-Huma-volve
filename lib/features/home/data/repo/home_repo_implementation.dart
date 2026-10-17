@@ -25,11 +25,13 @@ class HomeRepoImplementation extends HomeRepositry {
 
   @override
   Future<Either<ErrorModel, List<ProductEntity>>> getCategoryProduct(
-    int categoryId,
-  ) async {
+    int categoryId, {
+    required int limit,
+    required int offest,
+  }) async {
     try {
       List<ProductEntity> products = await homeRemoteDataSrc
-          .getCategoryPrpducts(categoryId);
+          .getCategoryPrpducts(categoryId, limit: limit, offest: offest);
       return Right(products);
     } on DioException catch (error) {
       return Left(handleDioExpection(error));

@@ -1,3 +1,5 @@
+import 'package:ecommerce_app_huma_volve/features/home/domin/entity/product_entity.dart';
+
 import 'package:flutter/material.dart';
 
 class Product {
@@ -18,6 +20,18 @@ class Product {
     required this.colors,
     required this.sizes,
   });
+
+  factory Product.fromProductEntity(ProductEntity entity) {
+    return Product(
+      id: entity.id.toString(),
+      name: entity.title ?? '',
+      description: entity.desc ?? '',
+      price: entity.price?.toDouble() ?? 00.0,
+      imageUrl: entity.img ?? '',
+      colors: [],
+      sizes: [],
+    );
+  }
 }
 
 final dummyProducts = [

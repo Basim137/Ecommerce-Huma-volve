@@ -2,7 +2,6 @@ import 'package:ecommerce_app_huma_volve/core/constants/strings/end_points.dart'
 import 'package:ecommerce_app_huma_volve/core/internet/api_consumer.dart';
 import 'package:ecommerce_app_huma_volve/features/home/data/model/categories_model.dart';
 import 'package:ecommerce_app_huma_volve/features/home/data/model/product_model.dart';
-import 'package:ecommerce_app_huma_volve/features/home/presentation/cubit/home_status.dart';
 
 class HomeRemoteDataSrc {
   ApiConsumer apiConsumer;
@@ -24,10 +23,19 @@ class HomeRemoteDataSrc {
   }
 
   //
-  Future<List<ProductModel>> getCategoryPrpducts(int categoryId) async {
+  Future<List<ProductModel>> getCategoryPrpducts(
+    int categoryId, {
+    required int limit,
+    required int offest,
+  }) async {
     try {
       List jsonData = (await apiConsumer.get(
         endpoint: EndPoints.getCategoryProducts(categoryId),
+
+        queryParameters: {
+          ApiKeys.limit: limit.toString(),
+          ApiKeys.offest: offest.toString(),
+        },
       )).data;
 
       return jsonData.map((item) {
